@@ -169,7 +169,7 @@ const Profile = () => {
               </div>
               <div className="ml-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  {profile?.full_name || 'Anonymous'}
+                  {profile?.full_name || 'Avi'}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">
                   @{profile?.username || 'user'}
