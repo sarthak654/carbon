@@ -15,7 +15,7 @@ import ChatBot from './components/ChatBot';
 function App() {
   return (
     <Router>
-      <AuthProvider>
+      <AuthProvider> 
         <ThemeProvider>
           <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
             <Sidebar />
@@ -33,7 +33,7 @@ function App() {
           </div>
           <Toaster position="top-right" />
         </ThemeProvider>
-      </AuthProvider>
+      </AuthProvider> 
     </Router>
   );
 }

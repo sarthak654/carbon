@@ -34,7 +34,7 @@ function App() {
         </Routes>
         <ChatBot />
       </BrowserRouter>
-    </AuthProvider>
+     </AuthProvider> 
   );
 }
 

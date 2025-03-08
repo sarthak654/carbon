@@ -78,12 +78,51 @@ const SubmitActions = () => {
         logger: (m) => console.log(m),
       }
     )
-      .then(({ data: { text } }) => {
+      .then(async ({ data: { text } }) => {
         // Extract bill number using regex
         const billNoMatch = text.match(/Bill No:?\s*([^\n\r]*)/i);
         const billNumber = billNoMatch ? billNoMatch[1].trim() : 'Bill number not found';
         
-        setOcrText(billNumber); // Store only the bill number
+        setOcrText(billNumber);
+
+        // Only send to server if a valid bill number was found
+        if (billNumber && billNumber !== 'Bill number not found') {
+          try {
+            const response = await fetch('http://localhost:3000/add-bill', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ billNumber }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              if (response.status === 409) {
+                toast('This bill number has already been recorded', {
+                  icon: '⚠️',
+                  duration: 4000,
+                  style: {
+                    backgroundColor: '#FEF3C7',
+                    color: '#92400E',
+                    border: '1px solid #F59E0B'
+                  }
+                });
+              } else {
+                throw new Error(data.error || 'Failed to save bill number');
+              }
+            } else {
+              toast.success('Bill number saved successfully');
+            }
+          } catch (error) {
+            console.error('Error saving bill number:', error);
+            toast.error(error.message || 'Failed to save bill number');
+          }
+        } else {
+          toast.error('No valid bill number found in the image');
+        }
+
         setIsProcessing(false);
       })
       .catch((error) => {
@@ -321,3 +360,5 @@ const SubmitActions = () => {
 };
 
 export default SubmitActions;
+
+
