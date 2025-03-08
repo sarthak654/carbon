@@ -5,6 +5,7 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import LandPage from './pages/LandPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ChatBot from './components/ChatBot';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -31,6 +32,7 @@ function App() {
             }
           />
         </Routes>
+        <ChatBot />
       </BrowserRouter>
     </AuthProvider>
   );

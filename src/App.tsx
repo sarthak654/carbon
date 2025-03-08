@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import ChatBot from './components/ChatBot';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
                 <Route path="/admin" element={<AdminPanel />} />
               </Routes>
             </div>
+            <ChatBot />
           </div>
           <Toaster position="top-right" />
         </ThemeProvider>
