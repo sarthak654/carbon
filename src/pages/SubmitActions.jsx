@@ -73,18 +73,23 @@ const SubmitActions = () => {
     setIsProcessing(true);
     Tesseract.recognize(
       imageFile,
-      'eng', // Language, you can change to other language codes if necessary
+      'eng',
       {
-        logger: (m) => console.log(m), // Logging the OCR process for feedback
+        logger: (m) => console.log(m),
       }
     )
       .then(({ data: { text } }) => {
-        setOcrText(text); // Store the OCR result
-        setIsProcessing(false); // Stop the loading state
+        // Extract bill number using regex
+        const billNoMatch = text.match(/Bill No:?\s*([^\n\r]*)/i);
+        const billNumber = billNoMatch ? billNoMatch[1].trim() : 'Bill number not found';
+        
+        setOcrText(billNumber); // Store only the bill number
+        setIsProcessing(false);
       })
       .catch((error) => {
         console.error('OCR error:', error);
         setIsProcessing(false);
+        toast.error('Failed to extract bill number');
       });
   };
 
