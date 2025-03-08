@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../api/supabase';
-import { processReceipt } from '../api/ocrService'; // OCR service for transport receipts
-import { analyzeRecyclingImage } from '../api/imageRecognition'; // Image recognition for recycling
 import { Upload, Loader2, MapPin, Sparkles, Leaf, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import Tesseract from 'tesseract.js';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,12 +40,14 @@ const SubmitActions = () => {
 
   const [actionType, setActionType] = useState('transport');
   const [file, setFile] = useState(null);
-  const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [ocrText, setOcrText] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [description, setDescription] = useState('');
   const [geoLocation, setGeoLocation] = useState(null);
   const [energySavingData, setEnergySavingData] = useState('');
   const [estimatedCredits, setEstimatedCredits] = useState(2.5);
+  const [loading, setLoading] = useState(false); // Define the loading state
 
   const actionTypes = [
     { id: 'transport', label: 'Public Transport', co2: 2.5, icon: <Globe className="text-blue-500" /> },
@@ -62,7 +63,29 @@ const SubmitActions = () => {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(selectedFile);
+
+      // Perform OCR immediately after file is selected
+      performOCR(selectedFile);
     }
+  };
+
+  const performOCR = (imageFile) => {
+    setIsProcessing(true);
+    Tesseract.recognize(
+      imageFile,
+      'eng', // Language, you can change to other language codes if necessary
+      {
+        logger: (m) => console.log(m), // Logging the OCR process for feedback
+      }
+    )
+      .then(({ data: { text } }) => {
+        setOcrText(text); // Store the OCR result
+        setIsProcessing(false); // Stop the loading state
+      })
+      .catch((error) => {
+        console.error('OCR error:', error);
+        setIsProcessing(false);
+      });
   };
 
   const handleGeoLocation = () => {
@@ -96,7 +119,7 @@ const SubmitActions = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Set loading to true when submitting
     try {
       let publicUrl = null;
       if (file) {
@@ -155,13 +178,11 @@ const SubmitActions = () => {
       toast.error(`Error submitting action: ${error.message}`);
       console.error('Error:', error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Set loading to false when done
     }
   };
 
   const verifyEnergySaving = async (data) => {
-    // Add energy-saving validation logic here
-    // For now, we'll assume the data is valid if it's provided
     if (data && data > 0) {
       return { success: true };
     } else {
@@ -170,8 +191,6 @@ const SubmitActions = () => {
   };
 
   const validateGeoTracking = async (location) => {
-    // Add geolocation validation logic (e.g., check if the user is walking or cycling)
-    // For now, we will assume the geo-location is valid if coordinates are available
     if (location.latitude && location.longitude) {
       return { success: true };
     } else {
@@ -247,52 +266,35 @@ const SubmitActions = () => {
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
             Action Details
           </h2>
-          
-          {actionType === 'geo_tracking' && (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              type="button"
-              onClick={handleGeoLocation}
-              className="w-full mb-6 p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow duration-200"
-            >
-              <MapPin className="h-5 w-5" />
-              Add Location
-            </motion.button>
-          )}
-
-          {actionType === 'energy' && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                Energy Saving Details
-              </label>
-              <input
-                type="number"
-                value={energySavingData}
-                onChange={handleEnergySavingChange}
-                className="w-full p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border-0 focus:ring-2 focus:ring-green-500 transition-all duration-200"
-                placeholder="Enter your energy-saving details"
-              />
-            </div>
-          )}
 
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
-              Upload Evidence
+              Upload Evidence (Image)
             </label>
             <div className="relative">
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="w-full p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 focus:outline-none focus:border-green-500 transition-colors duration-200"
+                className="w-full p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border-0 focus:ring-2 focus:ring-green-500 transition-all duration-200"
               />
               {preview && (
                 <div className="mt-4 rounded-xl overflow-hidden">
                   <img src={preview} alt="Preview" className="w-full h-48 object-cover" />
                 </div>
               )}
+              {isProcessing && (
+                <p>Processing...</p>
+              )}
+              {ocrText && (
+                <div>
+                  <h3 className="text-xl font-semibold">OCR Output</h3>
+                  <textarea value={ocrText} rows={10} readOnly className="w-full p-4 mt-2 bg-gray-50 dark:bg-gray-700 rounded-xl border-0 focus:ring-2 focus:ring-green-500"></textarea>
+                </div>
+              )}
             </div>
           </div>
+
         </motion.div>
 
         <motion.button
