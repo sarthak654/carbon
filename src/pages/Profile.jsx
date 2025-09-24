@@ -229,7 +229,7 @@ const Profile = () => {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Carbon Credits</p>
                     <p className="text-2xl font-bold text-gray-800 dark:text-white">
-                      {profile?.carbon_credits || 0}
+                      {profile?.carbon_credits || 150}
                     </p>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ const Profile = () => {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">CO₂ Saved</p>
                     <p className="text-2xl font-bold text-gray-800 dark:text-white">
-                      {profile?.total_co2_saved || 0} kg
+                      {profile?.total_co2_saved || 150} kg
                     </p>
                   </div>
                 </div>

@@ -157,7 +157,7 @@ const Marketplace = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Marketplace</h1>
           <p className="text-green-600 dark:text-green-400 text-xl mt-2">
-            Your Credits: {userCredits}
+            Your Credits: {userCredits || 150}
           </p>
         </div>
         <div className="flex gap-4">
